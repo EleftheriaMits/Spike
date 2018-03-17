@@ -15,6 +15,8 @@ package
 	import flash.utils.getTimer;
 	import flash.utils.setTimeout;
 	
+	import mx.utils.ObjectUtil;
+	
 	import events.SpikeEvent;
 	
 	import feathers.utils.ScreenDensityScaleFactorManager;
@@ -71,7 +73,7 @@ package
 			else
 			{
 				var errorEvent:ErrorEvent = e.error as ErrorEvent;
-				sendError("<p>Error Event ID: " + errorEvent.errorID + "</p>");
+				sendError("<p>Error Event ID: " + errorEvent.errorID + "</p><p>Text: " + errorEvent.text + "</p><p>Type: " + errorEvent.type + "</p><p>Target: " + ObjectUtil.toString(errorEvent.target) + "</p><p>Current Target: " + ObjectUtil.toString(errorEvent.currentTarget));
 			}
 		}
 		
