@@ -5,7 +5,11 @@ package
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
 	import flash.display3D.Context3DProfile;
+	import flash.events.ErrorEvent;
 	import flash.events.Event;
+	import flash.events.UncaughtErrorEvent;
+	import flash.net.URLLoader;
+	import flash.net.URLVariables;
 	import flash.system.System;
 	import flash.utils.clearInterval;
 	import flash.utils.getTimer;
@@ -14,6 +18,10 @@ package
 	import events.SpikeEvent;
 	
 	import feathers.utils.ScreenDensityScaleFactorManager;
+	
+	import model.ModelLocator;
+	
+	import network.EmailSender;
 	
 	import starling.core.Starling;
 	import starling.events.Event;
@@ -48,6 +56,49 @@ package
 			
 			stage.addEventListener( flash.events.Event.RESIZE, onStageResize );
 			timeoutID = setTimeout( initStarling, 50 );
+			
+			loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
+		}
+		
+		private function onUncaughtError(e:UncaughtErrorEvent):void
+		{
+			// Do something with your error.
+			if (e.error is Error)
+			{
+				var error:Error = e.error as Error;
+				sendError("<p>Error ID: " + error.errorID + "</p><p>Error Name: " + error.name + "</p><p> Error Message: " + error.message + "</p><p>Error Stack Trace: " + error.getStackTrace() + "</p>");
+			}
+			else
+			{
+				var errorEvent:ErrorEvent = e.error as ErrorEvent;
+				sendError("<p>Error Event ID: " + errorEvent.errorID + "</p>");
+			}
+		}
+		
+		private function sendError(error:String):void
+		{
+			//Create URL Request 
+			var vars:URLVariables = new URLVariables();
+			vars.mimeType = "text/html";
+			vars.emailSubject = "Spike Uncaught Error";
+			vars.emailBody = error;
+			vars.userName = "";
+			vars.userEmail = "miguel.kennedy@spike-app.com";
+			
+			//Send Email
+			EmailSender.sendData
+				(
+					EmailSender.TRANSMISSION_URL_NO_ATTACHMENT,
+					onLoadCompleteHandler,
+					vars
+				);
+		}
+		
+		private function onLoadCompleteHandler(event:flash.events.Event):void 
+		{ 
+			var loader:URLLoader = URLLoader(event.target);
+			loader.removeEventListener(flash.events.Event.COMPLETE, onLoadCompleteHandler);
+			loader = null;
 		}
 		
 		private function onStageResize( event:flash.events.Event ):void 
